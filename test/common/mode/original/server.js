@@ -7,6 +7,7 @@ const xmlBodyParser = require('express-xml-bodyparser');
 let app = Express();
 app.use(cors());
 app.use(cookie());
+app.use(bodyParser.text())
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(xmlBodyParser())

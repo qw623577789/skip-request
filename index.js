@@ -1,6 +1,6 @@
 let GetRequest = require('./src/request/get');
 let PostRequest = require('./src/request/post');
-let FakeResponse = require('./src/lib/fake/response');
+let FakeResponse = require('./src/common/lib/fake/response');
 
 module.exports =  class {
     static get get() {
