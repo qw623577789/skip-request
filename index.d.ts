@@ -13,7 +13,7 @@ declare module 'skip-request' {
         submit(): Response;
     }
 
-    class GetRequest extends BaseRequest {}
+    interface GetRequest extends BaseRequest {}
 
     interface PostRequest extends BaseRequest {
         form(form: object): this;
