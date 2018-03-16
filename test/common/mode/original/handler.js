@@ -31,7 +31,7 @@ module.exports = (router)=>{
         response.sendFile(__dirname + '/static/pic.jpg')
     });
 
-    router.get('request.timeout', (request, response) => {
+    router.get('/request.timeout', (request, response) => {
         setTimeout(() => {
             response.end("hi");
         }, 5000)

@@ -1,56 +1,55 @@
 const should = require('should');
 const fs = require('fs');
 const Base = require('../base');
+const Constant = require('../../common/constant');
+const FormData = require('form-data');
 
 module.exports = class extends Base{
     constructor() {
         super();
-        this._method = "post";
-        this._body = null;
-        this._formData = null;
+        this._request.method = "post";
     }
 
     form(form) {
-        should(this._body).be.null();
         should(form).be.Object();
-        this._contentType = this._ContentType.FORM;
+        this._request.headers["content-type"] = Constant.ContentType.FORM;
         let params = [];
         for (let key in form) {
             params.push(`${key}=${form[key]}`);
         }
-        this._body = params.join('&');
+        this._request.body = params.join('&');
         return this;
     }
 
     mutilForm(form) {
-        should(this._body).be.null();
         should(form).be.Object();
-        this._contentType = this._ContentType.MUTIL_FORM;
-        this._formData = form;
+        this._request.headers["content-type"] = Constant.ContentType.MUTIL_FORM;
+        // let formData = new FormData();
+        // for (let key in formData) {
+        //     formData.
+        // }
+        this._request.formData = form;
         return this;
     }
 
     json(json) {
-        should(this._body).be.null();
         should(json).be.Object();
-        this._contentType = this._ContentType.JSON;
-        this._body = JSON.stringify(json);
+        this._request.headers["content-type"] = Constant.ContentType.JSON;
+        this._request.body = JSON.stringify(json);
         return this;
     }
 
     xml(xml) {
-        should(this._body).be.null();
         should(xml).be.String();
-        this._contentType = this._ContentType.XML;
-        this._body = xml;
+        this._request.headers["content-type"] = Constant.ContentType.XML;
+        this._request.body = xml;
         return this;
     }
 
     text(text) {
-        should(this._body).be.null();
         should(text).be.String();
-        this._contentType = this._ContentType.TEXT;
-        this._body = text;
+        this._request.headers["content-type"] = Constant.ContentType.TEXT;
+        this._request.body = text;
         return this;
     }
 }

@@ -1,6 +1,8 @@
 const process = require('process');
 const should = require("should");
+const mimeType  = require('mime-types');
 const mutex = require("key_mutex").mutex();
+const Constant = require('../../constant');
 
 module.exports =  class FResponse {
     constructor() {
@@ -18,7 +20,10 @@ module.exports =  class FResponse {
                 let response = new _Response();
                 await handler.callback(request, response);
                 let serializeResponse = response.serialize();
-                callback(null, {status: serializeResponse.status, body: serializeResponse.body})
+                callback(null, {
+                    request: options,
+                    response: serializeResponse
+                });
             }
             catch(error){
                 callback(error, null);
@@ -61,6 +66,10 @@ class _Request {
         this._query = options.qs;
         this._method = options.method;
         this._url = options.url;
+    }
+
+    get time() {
+        return this._time;
     }
 
     get url() {
@@ -106,29 +115,42 @@ class _Request {
                 throw new Error("unsupport contentType");
         }
     }
-
 }
 
 class _Response {
     constructor(options) {
         this._status = 200;
+        this._statusMessage = 'OK';
         this._body = null;
+        this._headers = {
+            'content-type': Constant.ContentType.TEXT
+        }
     }
 
-    status(status = 200) {
+    status(status, statusMessage) {
         this._status = status;
+        this._statusMessage = statusMessage;
         return this;
     }
 
     text(text) {
         should(text).be.String();
-        this._body = text;
+        this._body = new Buffer(text);
+        this._headers['content-type'] = Constant.ContentType.TEXT;
+        return this;
+    }
+
+    xml(text) {
+        should(text).be.String();
+        this._body = new Buffer(text);
+        this._headers['content-type'] = Constant.ContentType.XML;
         return this;
     }
 
     json(object) {
         should(object).be.Object();
-        this._body = JSON.stringify(object);
+        this._body = new Buffer(JSON.stringify(object));
+        this._headers['content-type'] = Constant.ContentType.JSON;
         return this;
     }
 
@@ -136,12 +158,16 @@ class _Response {
         const fs = require('fs');
         if(!fs.existsSync(filePath)) throw new Error('file is not exist');
         this._body = fs.readFileSync(filePath);
+        this._headers['content-type'] = mimeType.lookup(filePath);
         return this;
     }
 
     serialize() {
         return {
             status: this._status,
+            statusMessage: this._statusMessage,
+            httpVersion: 'HTTP/1.1',
+            headers: this._headers,
             body: this._body
         }
     }

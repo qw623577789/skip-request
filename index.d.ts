@@ -10,7 +10,7 @@ declare module 'skip-request' {
         proxy(host: string, port: number): this;
         timeout(microSecond: number): this;
         query(query: object): this;
-        async submit(): Response;
+        submit(): Response;
     }
 
     class GetRequest extends BaseRequest {}
@@ -25,6 +25,7 @@ declare module 'skip-request' {
 
     interface Response {
         status: number;
+        har: object;
         toJson(): object;
         toString(): string;
         toBuffer(): Buffer;
@@ -45,8 +46,9 @@ declare module 'skip-request' {
     interface FResponse {
         status(status: number): this;
         text(text: string): this;
-        json(json: obejct): this;
+        json(json: object): this;
         file(filePath: string): this;
+        xml(text: string): this;
     }
 
     interface FakeResponse {

@@ -1,5 +1,6 @@
 const stream = require('stream');
 const Core = require('request');
+const moment = require('moment');
 const process = require('process');
 
 module.exports =  async (options) => {
@@ -24,12 +25,26 @@ module.exports =  async (options) => {
             fileStream.writable = false;
             fileStream.readable = true;
             response.body = buffer;
-            return resolve(response);
+            return resolve({
+                request: options,
+                response: response
+            });
         };
-
+        
         Core(options, (error, resp, body) => {
-            if (error)  return reject(error);
+            //support for multipart/form-data har
+            if (options.formData != undefined) {
+                options.headers = Object.assign(options.headers, resp.request.headers)
+            }
             response.status = resp.statusCode;
+            response.statusMessage = resp.statusMessage;
+            response.headers = resp.headers;
+            response.httpVersion= 'HTTP/' + resp.httpVersion;
         }).pipe(fileStream);
+
+        
+
+
+
     });
 }

@@ -4,6 +4,6 @@ const Base = require('../base');
 module.exports = class extends Base{
     constructor() {
         super();
-        this._method = "get";
+        this._request.method = "get";
     }
 }

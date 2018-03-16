@@ -1,42 +1,35 @@
 const should = require('should');
 const Response = require('../../response');
 const process = require('process');
+const moment = require('moment');
+const Constant = require('../../common/constant');
 
-
-module.exports = class {
+module.exports = class{
     constructor() {
-        this._url = undefined;
-        this._headers = {};
-        this._cookies = null;
-        this._proxy = null;
-        this._query = null;
-        this._timeout = 30000;
-        this._ContentType = {
-            MUTIL_FORM:  'multipart/form-data',
-            FORM: 'application/x-www-form-urlencoded',
-            JSON: 'application/json',
-            XML: 'text/xml',
-            TEXT: 'text/plain'
-        }
-        this._contentType = this._ContentType.TEXT;
+        this._request = {
+            timeout: 30000,
+            headers: {
+                'content-type': Constant.ContentType.TEXT
+            }
+        };
     }
 
     url(url) {
         should(url).be.String();
-        this._url = url;
+        this._request.url = url;
         return this;
     }
 
 	header(headers) {
         should(headers).be.Object();
-		this._headers = Object.assign(this._headers, headers);
+		this._request.headers = Object.assign(this._request.headers, headers);
 		return this;
     }
     
     cookie(url, cookies) {
         should(url).be.String();
         should(cookies).be.Object();
-		this._cookies = {
+		this._request.cookies = {
             content: cookies,
             url: url
         }
@@ -46,53 +39,40 @@ module.exports = class {
     proxy(host, port) {
         should(host).be.String();
         should(port).be.within(1025, 65535);
-		this._proxy = {host, port};
+        this._request.strictSSL = false;
+        this._request.tunnel = true;
+        this._request.agentOptions = {
+            socksHost: host,
+            socksPort: port
+        }
 		return this;
     }
 
     timeout(microSecond) {
         should(microSecond).be.Number();
         should(microSecond).be.equal(parseInt(microSecond));
-        this._timeout = microSecond;
+        this._request.timeout = microSecond;
         return this;
     }
 
     query(query) {
 		should(query).be.Object();
-		this._query = query;
+		this._request.qs = query;
 		return this;
     }
 
     async submit() {
-        let options = {
-            url: this._url,
-            qs: typeof this._query === "object" ? this._query : null,
-            timeout: this._timeout,
-            method: this._method,
-            headers: Object.assign(this._headers, {
-                'content-type': this._contentType
-            }),
-            body: this._body,
-            formData: this._formData,
-            cookies: this._cookies
+        if (this._request.agentOptions !== undefined) {
+            this._request.agentClass = this._request.url.substr(0, 5) == 'https' ?  require('socks5-https-client/lib/Agent') : require('socks5-http-client/lib/Agent') 
         }
 
-        if (this._proxy !== null) {
-            options.agentClass = this._url.substr(0, 5) == 'https' ?  require('socks5-https-client/lib/Agent') : require('socks5-http-client/lib/Agent') 
-            options.strictSSL = false;
-            options.tunnel = true;
-            options.agentOptions = {
-                socksHost: this._proxy.host,
-                socksPort: this._proxy.port
-            }
-        }
-
+        this._request.time = moment();
         let result = null;
         if (process.argv.includes('fake')) {
-            result = await require('../../lib/fake/request')(options);
+            result = await require('../../common/lib/fake/request')(this._request);
         }
         else {
-            result = await require('../../lib/original/request')(options);
+            result = await require('../../common/lib/original/request')(this._request);
         }
 
         return new Response(result);
