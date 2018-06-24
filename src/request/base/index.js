@@ -2,6 +2,7 @@ const should = require('should');
 const Response = require('../../response');
 const process = require('process');
 const moment = require('moment');
+const fs = require('fs');
 const Constant = require('../../common/constant');
 
 module.exports = class{
@@ -10,7 +11,8 @@ module.exports = class{
             timeout: 30000,
             headers: {
                 'content-type': Constant.ContentType.TEXT
-            }
+            },
+            agentOptions: {}
         };
     }
 
@@ -41,10 +43,28 @@ module.exports = class{
         should(port).be.within(1025, 65535);
         this._request.strictSSL = false;
         this._request.tunnel = true;
-        this._request.agentOptions = {
+        this._request.agentOptions = Object.assign(this._request.agentOptions, {
             socksHost: host,
             socksPort: port
+        });
+		return this;
+    }
+
+    ca({certFilePath = undefined, keyFilePath = undefined, pfxFilePath = undefined}, passphrase) {
+        if (pfxFilePath != undefined) {
+            this._request.agentOptions = {
+                pfx: fs.readFileSync(pfxFilePath),
+                passphrase
+            }
         }
+        else {
+            this._request.agentOptions = {
+                cert: fs.readFileSync(certFilePath),
+                key: fs.readFileSync(certFilePath),
+                passphrase
+            }
+        }
+
 		return this;
     }
 

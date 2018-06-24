@@ -3,6 +3,11 @@ declare module 'skip-request' {
     let post: PostRequest;
     let fake: FakeResponse;
 
+    interface Ca {
+        certFilePath?: string|undefined, 
+        keyFilePath?: string|undefined, 
+        pfxFilePath?: string|undefined
+    }
     class BaseRequest {
         url(url: string): this;
         header(header: object): this;
@@ -10,6 +15,7 @@ declare module 'skip-request' {
         proxy(host: string, port: number): this;
         timeout(microSecond: number): this;
         query(query: object): this;
+        ca(certConfig: Ca, passphrase: string): this;
         submit(): Response;
     }
 
