@@ -82,7 +82,10 @@ module.exports = class{
     }
 
     async submit() {
-        if (this._request.agentOptions !== undefined) {
+        if (
+            this._request.agentOptions.socksHost !== undefined && 
+            this._request.agentOptions.socksPort !== undefined
+        ) {
             this._request.agentClass = this._request.url.substr(0, 5) == 'https' ?  require('socks5-https-client/lib/Agent') : require('socks5-http-client/lib/Agent') 
         }
 
