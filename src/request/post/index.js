@@ -33,7 +33,7 @@ module.exports = class extends Base{
     }
 
     json(json) {
-        should(json).be.Object();
+        if (!['object', 'number', 'boolean', 'string', 'array'].includes(typeof json)) throw new Error(`${json} is not json`);
         this._request.headers["content-type"] = Constant.ContentType.JSON;
         this._request.body = JSON.stringify(json);
         return this;
