@@ -64,7 +64,7 @@ module.exports = class {
 
     toJson() {
         let jsonObject = this._tryParseJsonTextToJson(this._body.toString()) || this._tryParseXmlTextToJson(this._body.toString());
-        should(jsonObject).be.Object();
+        should(jsonObject).be.not.undefined();
         return jsonObject;
     }
 
@@ -85,11 +85,11 @@ module.exports = class {
     _tryParseJsonTextToJson(text) {
         try {
             let object = JSON.parse(text);
-            if (typeof object !== 'object') return false;
+            if (!['object', 'number', 'boolean', 'string', 'array'].includes(typeof object)) return false;
             return object;
         }
         catch(error) {
-            return false;
+            return undefined;
         }
     }
 
@@ -98,7 +98,7 @@ module.exports = class {
             return xml2js(text, { explicitArray: false, ignoreAttrs: true});
         }
         catch (error) {
-            return false;
+            return undefined;
         }
     }
 
