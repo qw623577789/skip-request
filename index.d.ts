@@ -12,6 +12,7 @@ declare module 'skip-request' {
         url(url: string): this;
         header(header: object): this;
         cookie(url: string, cookies: object): this;
+        auth(userName: string, password: string, sendImmediately?: boolean, bearer?: string): this;
         proxy(host: string, port: number): this;
         timeout(microSecond: number): this;
         query(query: object): this;
