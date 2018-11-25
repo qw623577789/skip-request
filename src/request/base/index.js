@@ -38,6 +38,11 @@ module.exports = class{
 		return this;
     }
     
+    auth(userName, password, sendImmediately = false, bearer = '') {
+        this._request.auth(userName, password, sendImmediately, bearer);
+        return this;
+    }
+
     proxy(host, port) {
         should(host).be.String();
         should(port).be.within(1025, 65535);

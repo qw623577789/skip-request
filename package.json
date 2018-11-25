@@ -1,6 +1,6 @@
 {
   "name": "skip-request",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "easy request and support fake mode",
   "main": "index.js",
   "scripts": {
