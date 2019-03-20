@@ -38,8 +38,13 @@ module.exports = class{
 		return this;
     }
     
-    auth(userName, password, sendImmediately = false, bearer = '') {
-        this._request.auth(userName, password, sendImmediately, bearer);
+    auth(userName, password, sendImmediately = false, bearer = undefined) {
+        this._request.auth = {
+            userName, 
+            password, 
+            sendImmediately, 
+            bearer
+        }
         return this;
     }
 
