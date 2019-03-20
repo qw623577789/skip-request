@@ -1,7 +1,6 @@
 const should = require('should');
 const xml2js = require('xml2js-parser').parseStringSync;
 const moment = require('moment');
-const Har = require('har');
 const fs = require('fs');
 const url = require('url');
 const Stream = require('stream');
@@ -26,39 +25,12 @@ module.exports = class {
         return this._headers;
     }
 
-    get har() {
-        let har = new Har.Log({
-            version: 1.2,
-            creator: new Har.Creator({
-                name: 'skip-requester',
-                version: '1.0.0'
-            })
-        });
-
-        let entry = new Har.Entry({
+    get httpInfo() {
+        return {
             startedDateTime: this._request.time.format(),
             time: this._time.diff(this._request.time),
-            request: this._harRequest(),
-            response: this._harResponse()
-        });
-        //if (this._request.method !== "post") delete entry.postData;
-        har.addEntry(entry);
-
-        return {
-            log: {
-                creator: har.creator,
-                entries: har.entries.map(item => {
-                    return {
-                        cache: item.cache,
-                        request: item.request,
-                        response: item.response,
-                        startedDateTime: item.startedDateTime,
-                        time: item.time,
-                        timings: item.timings
-                    }
-                }),
-                version: har.version
-            }
+            request: this._httpInfoRequest(),
+            response: this._httpInfoResponse()
         };
     }
 
@@ -102,44 +74,33 @@ module.exports = class {
         }
     }
 
-    _harRequest() {
-        let request = new Har.Request({
+    _httpInfoRequest() {
+        let request = {
             url: this._request.url + (this._request.qs == undefined ? '' : "?" + Object.keys(this._request.qs).map(key => `${key}=${this._request.qs[key]}`).join('&')),
-            method: this._request.method
-        });
-
-        if (this._request.qs != undefined) {
-            for (let key in this._request.qs) {
-                let query = new Har.Query(key, this._request.qs[key], '');
-                request.addQuery(query);
-            }
+            method: this._request.method,
+            cookies: [],
+            headers: [],
+            postData: undefined
         }
 
         if (this._request.cookies != undefined) {
             let {host, pathname} = url.parse(this._request.url);
             for (let key in this._request.cookies.content) {
-                let cookie = new Har.Cookie({
+                request.cookies.push({
                     name: key,
                     value: this._request.cookies.content[key],
                     path: pathname,
                     domain: host
                 });
-                request.addCookie(cookie);
             }
-            
-            let key = 'cookie';
-            let value = Object.keys(this._request.cookies.content).map(key => `${key}=${this._request.cookies.content[key]}`).join(';');
-            let header = new Har.Header({name: key, value: value});
-            request.addHeader(header);
         }
 
         if (this._request.headers != undefined) {
             for (let key in this._request.headers) {
-                let header = new Har.Header({
+                request.headers.push({
                     name: key,
                     value: this._request.headers[key],
                 });
-                request.addHeader(header);
             }
         }
 
@@ -147,16 +108,18 @@ module.exports = class {
             let text = undefined;
             if (this._request.formData != undefined) {
                 if (this._request.headers["content-type"].indexOf('boundary=') != -1) {
-                    let sqlit = this._request.headers["content-type"].split('boundary=')[1];
+                    let split = this._request.headers["content-type"].split('boundary=')[1];
                     let content = Object.keys(this._request.formData).map(key => {
                         if (this._request.formData[key] instanceof Stream) {
                             let filename = path.basename(this._request.formData[key].path);
-                            let contentType = _getContentType(filename);
-                            return `--${sqlit}\r\nContent-Disposition: form-data; name=\"${key}\";filename=\"${filename}\"\r\nContent-Type:${contentType}\r\n\r\n...\r\n`;
+                            let contentType = this._getContentType(filename);
+                            return `--${split}\r\nContent-Disposition: form-data; name=\"${key}\";filename=\"${filename}\"\r\nContent-Type:${contentType}\r\n\r\n...\r\n`;
                         }
-                        else if(this._request.formData[key] instanceof String || 
-                         this._request.formData[key] instanceof Number) {
-                            return `--${sqlit}\r\nContent-Disposition: form-data; name=\"${key}\"\r\n\r\n${this._request.formData[key]}\r\n`;
+                        else if(typeof this._request.formData[key] === 'string' || 
+                            typeof this._request.formData[key] === 'number' ||
+                            typeof this._request.formData[key] === 'boolean'
+                        ) {
+                            return `--${split}\r\nContent-Disposition: form-data; name=\"${key}\"\r\n\r\n${this._request.formData[key]}\r\n`;
                         } 
                         else {
                             throw new Error(`not support parse ${this._request.formData[key]}`);
@@ -175,39 +138,40 @@ module.exports = class {
                 text = this._request.body;
             }
 
-            request.postData = new Har.PostData({
+            request.postData = {
                 mimeType: this._request.headers["content-type"] ,
                 text: text
-            });
+            };
         }
 
         return request;
     }
 
-    _harResponse() {
-        let response = new Har.Response({
+    _httpInfoResponse() {
+        let response = {
             status: this._status,
             statusText: this._statusMessage,
-            httpVersion: this._httpVersion
-        });
+            httpVersion: this._httpVersion,
+            cookies: [],
+            headers: [],
+            content: undefined
+        };
 
         if (this._headers != undefined) {
             for (let key in this._headers) {
                 if (Array.isArray(this._headers[key])) {
                     this._headers[key].forEach(item => {
-                        let header = new Har.Header({
+                        response.headers.push({
                             name: key,
                             value: item,
                         });
-                        response.addHeader(header);
                     })
                 }
                 else {
-                    let header = new Har.Header({
+                    response.headers.push({
                         name: key,
                         value: this._headers[key],
                     });
-                    response.addHeader(header);
                 }
             }
         }
@@ -237,17 +201,13 @@ module.exports = class {
                     }
                     return object;
                 }, {})
-                response.addCookie(new Har.Cookie(standard));
+                response.cookies.push(standard);
             }
         }
 
         let isString = Buffer.compare(new Buffer(this._body.toString()), this._body) === 0;
-        let content  = new Har.Content({
-            mimeType: this._headers['content-type'],
-            text: isString == false ? this._body.toString('base64') : this._body.toString(),
-            encoding: isString == false ? 'base64' : undefined
-        });
-        response.content = content;
+        let content = this._body.toString();
+        response.content = isString == false ? this._body.toString('base64') : this._tryParseJsonTextToJson(content) || content;
         return response;
     }
 

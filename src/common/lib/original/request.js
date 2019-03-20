@@ -33,7 +33,7 @@ module.exports =  async (options) => {
         
         Core(options, (error, resp, body) => {
             //support for multipart/form-data har
-            if (error != undefined) throw error;
+            if (error != undefined) return reject(error);
             if (options.formData != undefined) {
                 options.headers = Object.assign(options.headers, resp.request.headers)
             }
@@ -42,10 +42,5 @@ module.exports =  async (options) => {
             response.headers = resp.headers;
             response.httpVersion= 'HTTP/' + resp.httpVersion;
         }).pipe(fileStream);
-
-        
-
-
-
     });
 }

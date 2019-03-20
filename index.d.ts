@@ -32,7 +32,7 @@ declare module 'skip-request' {
 
     interface Response {
         status: number;
-        har: object;
+        httpInfo: object;
         toJson(): object;
         toString(): string;
         toBuffer(): Buffer;
