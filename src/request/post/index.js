@@ -15,7 +15,7 @@ module.exports = class extends Base{
         this._request.headers["content-type"] = Constant.ContentType.FORM;
         let params = [];
         for (let key in form) {
-            params.push(`${key}=${form[key]}`);
+            params.push(`${key}=${encodeURIComponent(form[key])}`);
         }
         this._request.body = params.join('&');
         return this;
