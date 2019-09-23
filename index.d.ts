@@ -16,6 +16,7 @@ declare module 'skip-request' {
         proxy(host: string, port: number): this;
         timeout(microSecond: number): this;
         query(query: object): this;
+        ignoreHttpsCa(): this;
         ca(certConfig: Ca, passphrase: string): this;
         submit(): Response;
     }

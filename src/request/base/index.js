@@ -60,6 +60,11 @@ module.exports = class{
 		return this;
     }
 
+    ignoreHttpsCa() {
+        this._request.strictSSL = false;
+        return this;
+    }
+    
     ca({certFilePath = undefined, keyFilePath = undefined, pfxFilePath = undefined}, passphrase) {
         if (pfxFilePath != undefined) {
             this._request.agentOptions = {
