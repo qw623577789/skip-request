@@ -19,6 +19,7 @@ declare module 'skip-request' {
         ignoreHttpsCa(): this;
         ca(certConfig: Ca, passphrase: string): this;
         submit(): Response;
+        secureProtocol(secureProtocol?: string = "TLSv1_method"): this;
     }
 
     interface GetRequest extends BaseRequest {}
