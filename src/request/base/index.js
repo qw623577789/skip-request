@@ -12,8 +12,13 @@ module.exports = class{
             headers: {
                 'content-type': Constant.ContentType.TEXT
             },
-            agentOptions: {}
+            agentOptions: {},
+            secureProtocol: "TLSv1_method"
         };
+    }
+
+    secureProtocol(secureProtocol = "TLSv1_method") {
+        this._request.secureProtocol = secureProtocol;
     }
 
     url(url) {
