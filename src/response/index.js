@@ -115,6 +115,18 @@ module.exports = class {
                             let contentType = this._getContentType(filename);
                             return `--${split}\r\nContent-Disposition: form-data; name=\"${key}\";filename=\"${filename}\"\r\nContent-Type:${contentType}\r\n\r\n...\r\n`;
                         }
+                        else if ( //buffer形式文件
+                            typeof this._request.formData[key] === 'object' &&
+                            (
+                                Buffer.isBuffer(this._request.formData[key].value) || 
+                                this._request.formData[key].value instanceof Stream
+                            ) &&
+                            typeof this._request.formData[key].options === 'object'
+                        ) { 
+                            let {filename, contentType = ""} = this._request.formData[key].options;
+                            if (contentType === "") contentType = this._getContentType(filename);
+                            return `--${split}\r\nContent-Disposition: form-data; name=\"${key}\";filename=\"${filename}\"\r\nContent-Type:${contentType}\r\n\r\n...\r\n`;
+                        }
                         else if(typeof this._request.formData[key] === 'string' || 
                             typeof this._request.formData[key] === 'number' ||
                             typeof this._request.formData[key] === 'boolean'
