@@ -12,6 +12,24 @@ suite('original mode', () => {
     })
 
     suite('#get', () => {
+        test('test', async function() {
+            this.timeout(5000);
+            console.time("1")
+            let a = (
+                await request.post
+                    .url('https://www.yinxiaobao.net/backend/agent/1.0.0/config.get')
+                    // .header({
+                    //     'Web-State': 'sessionId=74EF8D1400DE4191B2A3835ABEEA9D7E'
+                    // })
+                    .json({
+                        request: null
+                    })
+                    .submit()
+            ).toJson()
+            console.timeEnd("1")
+            // console.log(a)
+        });
+
         test('should return status = 200', async function() {
             let response = await request.get.url("https://www.baidu.com").timeout(2000).submit();
             const fs = require('fs');
@@ -124,6 +142,28 @@ suite('original mode', () => {
                 responseInfo.body.bb == 2, 'failed');
         });
 
+        test('json gbk, should success', async function() {
+            this.timeout(25000);
+            let response = await request.post
+                .json({
+                    aa: "人民",
+                    bb: 2
+                })
+                .characterEncoding('gbk')
+                .url("http://127.0.0.1:7777/gbk.request.info")
+                .timeout(25000)
+                .submit();
+            const fs = require('fs');
+            fs.writeFileSync('/tmp/' + uuid() + ".httpInfo", JSON.stringify(response.httpInfo, null, 4))
+            let responseInfo = response
+                .characterEncoding('gbk')
+                .toJson();
+            assert(
+                responseInfo.headers['content-type'] == 'application/json' &&
+                responseInfo.body.aa == "人民" && 
+                responseInfo.body.bb == 2, 'failed');
+        });
+
         test('xml, should success', async function() {
             this.timeout(25000);
             let response = await request.post.xml('<xml><appid><![CDATA[aaa]]></appid></xml>').url("http://127.0.0.1:7777/request.info").timeout(25000).submit();
@@ -131,6 +171,42 @@ suite('original mode', () => {
             fs.writeFileSync('/tmp/' + uuid() + ".httpInfo", JSON.stringify(response.httpInfo, null, 4))
             let responseInfo = response.toJson();
             assert(responseInfo.headers['content-type'] == 'text/xml', 'failed');
+        });
+
+        test('jsonToXml, should success', async function() {
+            this.timeout(25000);
+            let response = await request.post.jsonToXml({
+                xml: {
+                    appid: "aaa"
+                }
+            })
+                .url("http://127.0.0.1:7777/request.info")
+                .timeout(25000)
+                .submit();
+            const fs = require('fs');
+            fs.writeFileSync('/tmp/' + uuid() + ".httpInfo", JSON.stringify(response.httpInfo, null, 4))
+            let responseInfo = response.toJson();
+            assert(responseInfo.headers['content-type'] == 'text/xml', 'failed');
+        });
+
+        test('buffer, should success', async function() {
+            this.timeout(25000);
+            let response = await request.post.buffer(
+                'application/json',
+                Buffer.from(
+                    JSON.stringify({
+                        aa: 1,
+                        bb: 2
+                    })
+                )
+            ).url("http://127.0.0.1:7777/request.info").timeout(25000).submit();
+            const fs = require('fs');
+            fs.writeFileSync('/tmp/' + uuid() + ".httpInfo", JSON.stringify(response.httpInfo, null, 4))
+            let responseInfo = response.toJson();
+            assert(
+                responseInfo.headers['content-type'] == 'application/json' &&
+                responseInfo.body.aa == 1 && 
+                responseInfo.body.bb == 2, 'failed');
         });
 
         test('text, should success', async function() {

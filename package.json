@@ -1,6 +1,6 @@
 {
   "name": "skip-request",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "description": "easy request and support fake mode",
   "main": "index.js",
   "scripts": {
@@ -14,15 +14,16 @@
   },
   "dependencies": {
     "form-data": "^2.3.2",
+    "iconv-lite": "^0.5.1",
     "key_mutex": "^3.1.3",
     "mime-types": "^2.1.18",
     "moment": "^2.20.1",
     "path": "^0.12.7",
-    "request": "^2.83.0",
-    "should": "^13.2.1",
+    "request": "^2.88.2",
     "socks5-http-client": "^1.0.2",
     "socks5-https-client": "^1.2.1",
     "url": "^0.11.0",
+    "xml2js": "^0.4.23",
     "xml2js-parser": "^1.1.1"
   },
   "devDependencies": {
@@ -32,7 +33,7 @@
     "express": "^4.16.2",
     "express-xml-bodyparser": "^0.3.0",
     "md5": "^2.2.1",
-    "multer": "^1.3.0",
-    "mocha": "^5.0.1"
+    "mocha": "^5.0.1",
+    "multer": "^1.3.0"
   }
 }

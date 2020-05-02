@@ -35,5 +35,5 @@ module.exports = (router)=>{
         setTimeout(() => {
             response.end("hi");
         }, 5000)
-    })
+    });
 }
