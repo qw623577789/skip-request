@@ -1,13 +1,15 @@
-const should = require('should');
 const xml2js = require('xml2js-parser').parseStringSync;
 const moment = require('moment');
 const fs = require('fs');
 const url = require('url');
 const Stream = require('stream');
 const path = require('path');
+const mime = require('mime-types')
+const iconv = require('iconv-lite');
+const Constant = require('../common/constant');
 
 module.exports = class {
-    constructor({request, response:{status, statusMessage, headers, httpVersion, body}}) {
+    constructor({ request, response: { status, statusMessage, headers, httpVersion, body } }) {
         this._request = request;
         this._status = status;
         this._statusMessage = statusMessage;
@@ -15,8 +17,9 @@ module.exports = class {
         this._httpVersion = httpVersion;
         this._body = body;
         this._time = moment();
+        this._character = 'utf8';
     }
-    
+
     get status() {
         return this._status
     }
@@ -34,24 +37,37 @@ module.exports = class {
         };
     }
 
+    characterEncoding(character = "utf8") {
+        this._character = character;
+        return this;
+    }
+
     toJson() {
-        let jsonObject = this._tryParseJsonTextToJson(this._body.toString()) || this._tryParseXmlTextToJson(this._body.toString());
-        should(jsonObject).be.not.undefined();
+        let body = this._decode(this._body);
+        let jsonObject = this._tryParseJsonTextToJson(body) || this._tryParseXmlTextToJson(body);
         return jsonObject;
     }
 
     toString() {
-        return this._body.toString();
+        return this._decode(this._body);
     }
 
     toBuffer() {
-        return new Buffer(this._body);
+        return this._body;
     }
 
     toFile(filePath) {
-        should(this._body).be.not.null();
         fs.writeFileSync(filePath, this._body);
         return filePath;
+    }
+
+    _decode(buffer) {
+        if (this._character !== 'utf8') {
+            return iconv.decode(buffer, this._character);
+        }
+        else {
+            return buffer.toString();
+        }
     }
 
     _tryParseJsonTextToJson(text) {
@@ -60,14 +76,14 @@ module.exports = class {
             if (!['object', 'number', 'boolean', 'string', 'array'].includes(typeof object)) return false;
             return object;
         }
-        catch(error) {
+        catch (error) {
             return undefined;
         }
     }
 
     _tryParseXmlTextToJson(text) {
         try {
-            return xml2js(text, { explicitArray: false, ignoreAttrs: true});
+            return xml2js(text, { explicitArray: false, ignoreAttrs: true });
         }
         catch (error) {
             return undefined;
@@ -84,7 +100,7 @@ module.exports = class {
         }
 
         if (this._request.cookies != undefined) {
-            let {host, pathname} = url.parse(this._request.url);
+            let { host, pathname } = url.parse(this._request.url);
             for (let key in this._request.cookies.content) {
                 request.cookies.push({
                     name: key,
@@ -118,40 +134,41 @@ module.exports = class {
                         else if ( //buffer形式文件
                             typeof this._request.formData[key] === 'object' &&
                             (
-                                Buffer.isBuffer(this._request.formData[key].value) || 
+                                Buffer.isBuffer(this._request.formData[key].value) ||
                                 this._request.formData[key].value instanceof Stream
                             ) &&
                             typeof this._request.formData[key].options === 'object'
-                        ) { 
-                            let {filename, contentType = ""} = this._request.formData[key].options;
+                        ) {
+                            let { filename, contentType = "" } = this._request.formData[key].options;
                             if (contentType === "") contentType = this._getContentType(filename);
                             return `--${split}\r\nContent-Disposition: form-data; name=\"${key}\";filename=\"${filename}\"\r\nContent-Type:${contentType}\r\n\r\n...\r\n`;
                         }
-                        else if(typeof this._request.formData[key] === 'string' || 
+                        else if (typeof this._request.formData[key] === 'string' ||
                             typeof this._request.formData[key] === 'number' ||
                             typeof this._request.formData[key] === 'boolean'
                         ) {
                             return `--${split}\r\nContent-Disposition: form-data; name=\"${key}\"\r\n\r\n${this._request.formData[key]}\r\n`;
-                        } 
+                        }
                         else {
                             throw new Error(`not support parse ${this._request.formData[key]}`);
                         }
-    
+
                     }).join();
                     text = `${content}--${split}--\r\n`;
                 }
                 else {
                     text = Object.keys(this._request.formData)
-                            .map(key => `${key}=${this._request.formData[key]}`)
-                            .join('&');
+                        .map(key => `${key}=${this._request.formData[key]}`)
+                        .join('&');
                 }
             }
             else {
-                text = this._request.body;
+                text = Buffer.isBuffer(this._request.body) ? 
+                    this._request.body.toString('base64') : this._request.body;
             }
 
             request.postData = {
-                mimeType: this._request.headers["content-type"] ,
+                mimeType: this._request.headers["content-type"],
                 text: text
             };
         }
@@ -209,22 +226,33 @@ module.exports = class {
                         default:
                             object['name'] = key;
                             object['value'] = value;
-                            break;             
+                            break;
                     }
                     return object;
                 }, {})
                 response.cookies.push(standard);
             }
         }
+        
+        let content = undefined;
+        switch(
+            (this._headers['Content-Type'] || this._headers['content-type']).split(';')[0].trim()
+        ) {
+            case Constant.ContentType.JSON:
+            case Constant.ContentType.XML: 
+            case Constant.ContentType.TEXT:
+                content = this._body.toString();
+                break;
+            default:
+                content = this._body.toString('base64');
+                break;
+        }
 
-        let isString = Buffer.compare(new Buffer(this._body.toString()), this._body) === 0;
-        let content = this._body.toString();
-        response.content = isString == false ? this._body.toString('base64') : this._tryParseJsonTextToJson(content) || content;
+        response.content = content;
         return response;
     }
 
     _getContentType(filename) {
-        let mime = require('mime-types')
         return mime.lookup(filename) || 'application/octet-stream';
     }
 }

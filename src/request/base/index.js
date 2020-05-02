@@ -1,9 +1,13 @@
-const should = require('should');
 const Response = require('../../response');
 const process = require('process');
 const moment = require('moment');
 const fs = require('fs');
 const Constant = require('../../common/constant');
+const originalCore = require('../../common/lib/original/request');
+const fakeCore = require('../../common/lib/fake/request');
+const httpsAgent = require('socks5-https-client/lib/Agent');
+const httpAgent =  require('socks5-http-client/lib/Agent') 
+const iconv = require('iconv-lite');
 
 module.exports = class{
     constructor() {
@@ -13,7 +17,9 @@ module.exports = class{
                 'content-type': Constant.ContentType.TEXT
             },
             agentOptions: {},
-            secureProtocol: "TLSv1_method"
+            secureProtocol: "TLSv1_method",
+            encoding: null,
+            character: 'utf8'
         };
     }
 
@@ -22,20 +28,16 @@ module.exports = class{
     }
 
     url(url) {
-        should(url).be.String();
         this._request.url = url;
         return this;
     }
 
 	header(headers) {
-        should(headers).be.Object();
 		this._request.headers = Object.assign(this._request.headers, headers);
 		return this;
     }
     
     cookie(url, cookies) {
-        should(url).be.String();
-        should(cookies).be.Object();
 		this._request.cookies = {
             content: cookies,
             url: url
@@ -54,8 +56,6 @@ module.exports = class{
     }
 
     proxy(host, port) {
-        should(host).be.String();
-        should(port).be.within(1025, 65535);
         this._request.strictSSL = false;
         this._request.tunnel = true;
         this._request.agentOptions = Object.assign(this._request.agentOptions, {
@@ -89,16 +89,18 @@ module.exports = class{
     }
 
     timeout(microSecond) {
-        should(microSecond).be.Number();
-        should(microSecond).be.equal(parseInt(microSecond));
         this._request.timeout = microSecond;
         return this;
     }
 
     query(query) {
-		should(query).be.Object();
 		this._request.qs = query;
 		return this;
+    }
+
+    characterEncoding(character = "utf8") {
+        this._request.character = character;
+        return this;
     }
 
     async submit() {
@@ -106,16 +108,21 @@ module.exports = class{
             this._request.agentOptions.socksHost !== undefined && 
             this._request.agentOptions.socksPort !== undefined
         ) {
-            this._request.agentClass = this._request.url.substr(0, 5) == 'https' ?  require('socks5-https-client/lib/Agent') : require('socks5-http-client/lib/Agent') 
+            this._request.agentClass = this._request.url.substr(0, 5) == 'https' ?  httpsAgent : httpAgent 
         }
 
         this._request.time = moment();
+
+        if (this._request.character !== "utf8") {
+            this._request.body = iconv.encode(this._request.body, this._request.character);
+        }
+
         let result = null;
         if (process.argv.includes('fake')) {
-            result = await require('../../common/lib/fake/request')(this._request);
+            result = await fakeCore(this._request);
         }
         else {
-            result = await require('../../common/lib/original/request')(this._request);
+            result = await originalCore(this._request);
         }
 
         return new Response(result);

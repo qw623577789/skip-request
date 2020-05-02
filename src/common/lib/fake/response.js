@@ -1,8 +1,8 @@
 const process = require('process');
-const should = require("should");
 const mimeType  = require('mime-types');
 const mutex = require("key_mutex").mutex();
 const Constant = require('../../constant');
+const fs = require('fs');
 
 module.exports =  class FResponse {
     constructor() {
@@ -134,28 +134,24 @@ class _Response {
     }
 
     text(text) {
-        should(text).be.String();
-        this._body = new Buffer(text);
+        this._body = Buffer.from(text);
         this._headers['content-type'] = Constant.ContentType.TEXT;
         return this;
     }
 
     xml(text) {
-        should(text).be.String();
-        this._body = new Buffer(text);
+        this._body = Buffer.from(text);
         this._headers['content-type'] = Constant.ContentType.XML;
         return this;
     }
 
     json(object) {
-        should(object).be.Object();
-        this._body = new Buffer(JSON.stringify(object));
+        this._body = Buffer.from(JSON.stringify(object));
         this._headers['content-type'] = Constant.ContentType.JSON;
         return this;
     }
 
     file(filePath) {
-        const fs = require('fs');
         if(!fs.existsSync(filePath)) throw new Error('file is not exist');
         this._body = fs.readFileSync(filePath);
         this._headers['content-type'] = mimeType.lookup(filePath);

@@ -20,6 +20,7 @@ declare module 'skip-request' {
         ca(certConfig: Ca, passphrase: string): this;
         submit(): Response;
         secureProtocol(secureProtocol?: string = "TLSv1_method"): this;
+        characterEncoding(character?: string = "utf8"): this;
     }
 
     interface GetRequest extends BaseRequest {}
@@ -30,6 +31,8 @@ declare module 'skip-request' {
         xml(xml: string): this;
         text(text: string): this;
         mutilForm(form: object): this;
+        buffer(contentType: string, buffer: Buffer): this;
+        jsonToXml(json: object): this;
     }
 
     interface Response {
@@ -39,6 +42,7 @@ declare module 'skip-request' {
         toString(): string;
         toBuffer(): Buffer;
         toFile(filePath: string): string;
+        characterEncoding(character?: string = "utf8"): this;
     }
 
     type FCallback = (request: FRequest, response: FResponse) => void;
