@@ -12,24 +12,6 @@ suite('original mode', () => {
     })
 
     suite('#get', () => {
-        test('test', async function() {
-            this.timeout(5000);
-            console.time("1")
-            let a = (
-                await request.post
-                    .url('https://www.yinxiaobao.net/backend/agent/1.0.0/config.get')
-                    // .header({
-                    //     'Web-State': 'sessionId=74EF8D1400DE4191B2A3835ABEEA9D7E'
-                    // })
-                    .json({
-                        request: null
-                    })
-                    .submit()
-            ).toJson()
-            console.timeEnd("1")
-            // console.log(a)
-        });
-
         test('should return status = 200', async function() {
             let response = await request.get.url("https://www.baidu.com").timeout(2000).submit();
             const fs = require('fs');
