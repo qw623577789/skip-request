@@ -236,7 +236,7 @@ module.exports = class {
         
         let content = undefined;
         switch(
-            (this._headers['Content-Type'] || this._headers['content-type']).split(';')[0].trim()
+            (this._headers['Content-Type'] || this._headers['content-type'] || "").split(';')[0].trim()
         ) {
             case Constant.ContentType.JSON:
             case Constant.ContentType.XML: 
