@@ -82,7 +82,12 @@ module.exports = class {
 
     _tryParseXmlTextToJson(text) {
         try {
-            return parseXml(text);
+            return parseXml(
+                text, 
+                {
+                    parseNodeValue: false
+                }
+            );
         }
         catch (error) {
             return undefined;
