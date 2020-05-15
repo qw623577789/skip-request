@@ -1,6 +1,6 @@
 {
   "name": "skip-request",
-  "version": "0.4.2",
+  "version": "0.5.1",
   "description": "easy request and support fake mode",
   "main": "index.js",
   "scripts": {
@@ -13,6 +13,7 @@
     "url": "git+https://github.com/qw623577789/skip-request.git"
   },
   "dependencies": {
+    "fast-xml-parser": "^3.16.0",
     "form-data": "^2.3.2",
     "iconv-lite": "^0.5.1",
     "key_mutex": "^3.1.3",

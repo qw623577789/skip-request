@@ -1,4 +1,3 @@
-const xml2js = require('xml2js-parser').parseStringSync;
 const moment = require('moment');
 const fs = require('fs');
 const url = require('url');
@@ -7,7 +6,7 @@ const path = require('path');
 const mime = require('mime-types')
 const iconv = require('iconv-lite');
 const Constant = require('../common/constant');
-
+const parseXml = require('fast-xml-parser').parse;
 module.exports = class {
     constructor({ request, response: { status, statusMessage, headers, httpVersion, body } }) {
         this._request = request;
@@ -83,7 +82,7 @@ module.exports = class {
 
     _tryParseXmlTextToJson(text) {
         try {
-            return xml2js(text, { explicitArray: false, ignoreAttrs: true });
+            return parseXml(text);
         }
         catch (error) {
             return undefined;
