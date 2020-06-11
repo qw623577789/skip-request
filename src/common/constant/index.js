@@ -4,6 +4,7 @@ module.exports = {
         FORM: 'application/x-www-form-urlencoded',
         JSON: 'application/json',
         XML: 'text/xml',
-        TEXT: 'text/plain'
+        TEXT: 'text/plain',
+        HTML: 'text/html'
     }
 }
