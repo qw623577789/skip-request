@@ -83,7 +83,7 @@ module.exports = class {
     _tryParseXmlTextToJson(text) {
         try {
             return parseXml(
-                text, 
+                text,
                 {
                     parseNodeValue: false
                 }
@@ -167,7 +167,7 @@ module.exports = class {
                 }
             }
             else {
-                text = Buffer.isBuffer(this._request.body) ? 
+                text = Buffer.isBuffer(this._request.body) ?
                     this._request.body.toString('base64') : this._request.body;
             }
 
@@ -213,8 +213,10 @@ module.exports = class {
             let cookies = this._headers['set-cookie'] || this._headers['Set-Cookie'];
             for (let cookie of cookies) {
                 let standard = cookie.split(';').reduce((object, item) => {
-                    let key = item.substr(0, item.indexOf('=')).trim();
-                    let value = item.substr(item.indexOf('=') + 1);
+                    let cutIndex = item.indexOf('=');
+                    if (cutIndex === -1) cutIndex = item.length;
+                    let key = item.substr(0, cutIndex).trim();
+                    let value = item.substr(cutIndex + 1);
                     switch (key) {
                         case 'path':
                         case 'domain':
@@ -223,7 +225,8 @@ module.exports = class {
                             break;
                         case 'secure':
                         case 'httpOnly':
-                            object[key] = true;
+                        case 'HttpOnly':
+                            object['httpOnly'] = true;
                             break;
                         case 'max-age':
                             break;
@@ -237,13 +240,13 @@ module.exports = class {
                 response.cookies.push(standard);
             }
         }
-        
+
         let content = undefined;
-        switch(
-            (this._headers['Content-Type'] || this._headers['content-type'] || "").split(';')[0].trim()
+        switch (
+        (this._headers['Content-Type'] || this._headers['content-type'] || "").split(';')[0].trim()
         ) {
             case Constant.ContentType.JSON:
-            case Constant.ContentType.XML: 
+            case Constant.ContentType.XML:
             case Constant.ContentType.TEXT:
                 content = this._body.toString();
                 break;
