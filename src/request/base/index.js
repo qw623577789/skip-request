@@ -25,6 +25,7 @@ module.exports = class{
 
     secureProtocol(secureProtocol = "TLSv1_method") {
         this._request.secureProtocol = secureProtocol;
+        return this;
     }
 
     url(url) {
