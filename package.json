@@ -1,6 +1,6 @@
 {
   "name": "skip-request",
-  "version": "0.5.5",
+  "version": "0.6.0",
   "description": "easy request and support fake mode",
   "main": "index.js",
   "scripts": {
@@ -21,8 +21,6 @@
     "moment": "^2.20.1",
     "path": "^0.12.7",
     "request": "^2.88.2",
-    "socks5-http-client": "^1.0.2",
-    "socks5-https-client": "^1.2.1",
     "url": "^0.11.0",
     "xml2js": "^0.4.23",
     "xml2js-parser": "^1.1.1"

@@ -85,7 +85,7 @@ suite('original mode', () => {
 
         test('proxy, should success', async function() {
             this.timeout(25000);
-            let response = await request.get.url("http://www.baidu.com").proxy('127.0.0.1', 1080).timeout(25000).submit();
+            let response = await request.get.url("https://ifconfig.me/").proxy('127.0.0.1', 12334).timeout(25000).submit();
             const fs = require('fs');
             fs.writeFileSync('/tmp/' + uuid() + ".httpInfo", JSON.stringify(response.httpInfo, null, 4))
             let responseInfo = response.toString();

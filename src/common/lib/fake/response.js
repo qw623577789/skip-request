@@ -1,19 +1,19 @@
 const process = require('process');
-const mimeType  = require('mime-types');
+const mimeType = require('mime-types');
 const mutex = require("key_mutex").mutex();
 const Constant = require('../../constant');
 const fs = require('fs');
-
-module.exports =  class FResponse {
+const urlParser = require('url');
+module.exports = class FResponse {
     constructor() {
         this._handlers = new Map();
-        
+
         process.on('request', async (options, callback) => {
             try {
                 let handlers = this._handlers.get(options.method);
                 let handler = handlers.find((handler) => {
                     let regexp = new RegExp(handler.url);
-                    return regexp.test(options.url);
+                    return regexp.test(urlParser.format(options.uri));
                 });
                 if (handler == undefined) throw new Error(`can not find fake ${handler.url} hanlder`);
                 let request = new _Request(options);
@@ -25,7 +25,7 @@ module.exports =  class FResponse {
                     response: serializeResponse
                 });
             }
-            catch(error){
+            catch (error) {
                 callback(error, null);
             }
         })
@@ -38,7 +38,7 @@ module.exports =  class FResponse {
             handlers.push({
                 url: url,
                 callback: callback
-            });   
+            });
             this._handlers.set('post', handlers);
         });
     }
@@ -50,7 +50,7 @@ module.exports =  class FResponse {
             handlers.push({
                 url: url,
                 callback: callback
-            });   
+            });
             this._handlers.set('get', handlers);
         });
     }
@@ -65,7 +65,7 @@ class _Request {
         this._cookies = options.cookies != null ? options.cookies.content : null;
         this._query = options.qs;
         this._method = options.method;
-        this._url = options.url;
+        this._url = urlParser.format(options.uri);
     }
 
     get time() {
@@ -87,7 +87,7 @@ class _Request {
     get cookies() {
         return this._cookies;
     }
-    
+
     get query() {
         return this._query;
     }
@@ -97,7 +97,7 @@ class _Request {
     }
 
     get body() {
-        switch(this._headers['content-type']) {
+        switch (this._headers['content-type']) {
             case 'text/plain':
             case 'text/xml':
                 return this._body;
@@ -152,7 +152,7 @@ class _Response {
     }
 
     file(filePath) {
-        if(!fs.existsSync(filePath)) throw new Error('file is not exist');
+        if (!fs.existsSync(filePath)) throw new Error('file is not exist');
         this._body = fs.readFileSync(filePath);
         this._headers['content-type'] = mimeType.lookup(filePath);
         return this;

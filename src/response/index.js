@@ -1,12 +1,13 @@
 const moment = require('moment');
 const fs = require('fs');
-const url = require('url');
 const Stream = require('stream');
-const path = require('path');
 const mime = require('mime-types')
 const iconv = require('iconv-lite');
 const Constant = require('../common/constant');
 const parseXml = require('fast-xml-parser').parse;
+const urlParser = require('url');
+const path = require('path');
+
 module.exports = class {
     constructor({ request, response: { status, statusMessage, headers, httpVersion, body } }) {
         this._request = request;
@@ -96,7 +97,12 @@ module.exports = class {
 
     _httpInfoRequest() {
         let request = {
-            url: this._request.url + (this._request.qs == undefined ? '' : "?" + Object.keys(this._request.qs).map(key => `${key}=${this._request.qs[key]}`).join('&')),
+            url: urlParser.format(this._request.uri) +
+                (
+                    this._request.qs == undefined ?
+                        '' :
+                        (this._request.uri.search === null ? "?" : "&") + Object.keys(this._request.qs).map(key => `${key}=${this._request.qs[key]}`).join('&')
+                ),
             method: this._request.method,
             cookies: [],
             headers: [],
@@ -104,7 +110,7 @@ module.exports = class {
         }
 
         if (this._request.cookies != undefined) {
-            let { host, pathname } = url.parse(this._request.url);
+            let { host, pathname } = this._request.uri;
             for (let key in this._request.cookies.content) {
                 request.cookies.push({
                     name: key,

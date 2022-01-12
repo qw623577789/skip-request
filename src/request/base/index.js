@@ -5,9 +5,8 @@ const fs = require('fs');
 const Constant = require('../../common/constant');
 const originalCore = require('../../common/lib/original/request');
 const fakeCore = require('../../common/lib/fake/request');
-const httpsAgent = require('socks5-https-client/lib/Agent');
-const httpAgent =  require('socks5-http-client/lib/Agent') 
 const iconv = require('iconv-lite');
+const urlParser = require('url');
 
 module.exports = class{
     constructor() {
@@ -29,7 +28,15 @@ module.exports = class{
     }
 
     url(url) {
-        this._request.url = url;
+        const urlInfo = urlParser.parse(url);
+        this._request.uri = {
+            ...this._request.uri,
+            protocol: urlInfo.protocol,
+            hostname: urlInfo.hostname,
+            pathname: urlInfo. pathname,
+            search: urlInfo.search,
+            port: urlInfo.port || (urlInfo.protocol === "https:" ? 443 : 80)
+        };
         return this;
     }
 
@@ -59,10 +66,7 @@ module.exports = class{
     proxy(host, port) {
         this._request.strictSSL = false;
         this._request.tunnel = true;
-        this._request.agentOptions = Object.assign(this._request.agentOptions, {
-            socksHost: host,
-            socksPort: port
-        });
+        this._request.proxy = `http://${host}:${port}`;
 		return this;
     }
 
@@ -105,13 +109,6 @@ module.exports = class{
     }
 
     async submit() {
-        if (
-            this._request.agentOptions.socksHost !== undefined && 
-            this._request.agentOptions.socksPort !== undefined
-        ) {
-            this._request.agentClass = this._request.url.substr(0, 5) == 'https' ?  httpsAgent : httpAgent 
-        }
-
         this._request.time = moment();
 
         if (this._request.character !== "utf8") {
