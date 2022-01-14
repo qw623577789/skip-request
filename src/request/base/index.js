@@ -37,23 +37,19 @@ module.exports = class {
             search: urlInfo.search,
             port: urlInfo.port || (urlInfo.protocol === "https:" ? 443 : 80)
         };
-        if (followRedirect === true) {
-            this._request.jar = true;
-            this.header({ host: urlInfo.host })
-        }
         return this;
     }
 
     followRedirect(followRedirect = true) {
         if (followRedirect) {
             this._request.jar = true;
-            this.header({ host: urlInfo.host });
+            this.header({ host: this._request.uri.hostname });
             this._request.followAllRedirects = true;
         }
         else {
             this._request.followAllRedirects = false;
         }
-
+        return this;
     }
 
     header(headers) {
