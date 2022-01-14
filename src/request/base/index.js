@@ -8,7 +8,7 @@ const fakeCore = require('../../common/lib/fake/request');
 const iconv = require('iconv-lite');
 const urlParser = require('url');
 
-module.exports = class{
+module.exports = class {
     constructor() {
         this._request = {
             timeout: 30000,
@@ -33,31 +33,47 @@ module.exports = class{
             ...this._request.uri,
             protocol: urlInfo.protocol,
             hostname: urlInfo.hostname,
-            pathname: urlInfo. pathname,
+            pathname: urlInfo.pathname,
             search: urlInfo.search,
             port: urlInfo.port || (urlInfo.protocol === "https:" ? 443 : 80)
         };
+        if (followRedirect === true) {
+            this._request.jar = true;
+            this.header({ host: urlInfo.host })
+        }
         return this;
     }
 
-	header(headers) {
-		this._request.headers = Object.assign(this._request.headers, headers);
-		return this;
+    followRedirect(followRedirect = true) {
+        if (followRedirect) {
+            this._request.jar = true;
+            this.header({ host: urlInfo.host });
+            this._request.followAllRedirects = true;
+        }
+        else {
+            this._request.followAllRedirects = false;
+        }
+
     }
-    
+
+    header(headers) {
+        this._request.headers = Object.assign(this._request.headers, headers);
+        return this;
+    }
+
     cookie(url, cookies) {
-		this._request.cookies = {
+        this._request.cookies = {
             content: cookies,
             url: url
         }
-		return this;
+        return this;
     }
-    
+
     auth(userName, password, sendImmediately = false, bearer = undefined) {
         this._request.auth = {
-            userName, 
-            password, 
-            sendImmediately, 
+            userName,
+            password,
+            sendImmediately,
             bearer
         }
         return this;
@@ -67,15 +83,15 @@ module.exports = class{
         this._request.strictSSL = false;
         this._request.tunnel = true;
         this._request.proxy = `http://${host}:${port}`;
-		return this;
+        return this;
     }
 
     ignoreHttpsCa() {
         this._request.strictSSL = false;
         return this;
     }
-    
-    ca({certFilePath = undefined, keyFilePath = undefined, pfxFilePath = undefined}, passphrase) {
+
+    ca({ certFilePath = undefined, keyFilePath = undefined, pfxFilePath = undefined }, passphrase) {
         if (pfxFilePath != undefined) {
             this._request.agentOptions = {
                 pfx: fs.readFileSync(pfxFilePath),
@@ -90,7 +106,7 @@ module.exports = class{
             }
         }
 
-		return this;
+        return this;
     }
 
     timeout(microSecond) {
@@ -99,8 +115,8 @@ module.exports = class{
     }
 
     query(query) {
-		this._request.qs = query;
-		return this;
+        this._request.qs = query;
+        return this;
     }
 
     characterEncoding(character = "utf8") {

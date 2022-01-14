@@ -14,6 +14,7 @@ declare module 'skip-request' {
         cookie(url: string, cookies: object): this;
         auth(userName: string, password: string, sendImmediately?: boolean, bearer?: string): this;
         proxy(host: string, port: number): this;
+        followRedirect(followRedirect?: boolean = true): this;
         timeout(microSecond: number): this;
         query(query: object): this;
         ignoreHttpsCa(): this;
