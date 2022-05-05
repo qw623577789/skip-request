@@ -37,6 +37,8 @@ module.exports = class {
             search: urlInfo.search,
             port: urlInfo.port || (urlInfo.protocol === "https:" ? 443 : 80)
         };
+        // 修复request库在某些情况强制校验请求头里的host
+        this._request.headers.host = urlInfo.hostname;
         return this;
     }
 
