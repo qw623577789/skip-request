@@ -32,7 +32,6 @@ module.exports = class {
         this._request.uri = {
             ...this._request.uri,
             protocol: urlInfo.protocol,
-            host: urlInfo.hostname, //修复没有指明proxy代理但环境变量下有代理情况下，ip地址访问为undefined
             hostname: urlInfo.hostname,
             pathname: urlInfo.pathname,
             search: urlInfo.search,
@@ -40,6 +39,10 @@ module.exports = class {
         };
         // 修复request库在某些情况强制校验请求头里的host
         this._request.headers.host = urlInfo.hostname;
+
+        //修复没有指明proxy代理但环境变量下有代理情况下，ip地址访问为undefined
+        this._request.uri.host = `${this._request.uri.hostname}:${this._request.uri.port}`;
+
         return this;
     }
 
