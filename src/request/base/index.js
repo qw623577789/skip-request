@@ -88,6 +88,13 @@ module.exports = class {
         return this;
     }
 
+    proxy(host, port, isSock) {
+        this._request.strictSSL = false;
+        this._request.tunnel = isSock;
+        this._request.proxy = `http://${host}:${port}`;
+        return this;
+    }
+
     ignoreHttpsCa() {
         this._request.strictSSL = false;
         return this;
