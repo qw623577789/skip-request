@@ -68,6 +68,8 @@ declare module 'skip-request' {
     interface FakeResponse {
         post(url: string, callback: FCallback): void;
         get(url: string, callback: FCallback): void;
+        put(url: string, callback: FCallback): void;
+        delete(url: string, callback: FCallback): void;
     }
 
 
