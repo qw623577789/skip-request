@@ -253,6 +253,7 @@ module.exports = class {
         ) {
             case Constant.ContentType.JSON:
             case Constant.ContentType.XML:
+            case Constant.ContentType.APPLICATION_XML:
             case Constant.ContentType.TEXT:
             case Constant.ContentType.HTML:
                 content = this._body.toString();
