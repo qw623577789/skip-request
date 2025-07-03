@@ -12,9 +12,7 @@ module.exports = class {
     constructor() {
         this._request = {
             timeout: 30000,
-            headers: {
-                'content-type': Constant.ContentType.TEXT
-            },
+            headers: {},
             agentOptions: {},
             secureProtocol: "TLSv1_method",
             encoding: null,
